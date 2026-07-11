@@ -10,9 +10,13 @@ from ..schemas import (
     PredictionResponse,
     PredictionHistoryResponse,
 )
+from ..schemas import PredictionUpdate
 from ..services import predict_price
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/api/v1",
+    tags=["Predictions"],
+)
 
 
 @router.get("/")
@@ -72,6 +76,55 @@ def get_predictions(
         db.query(Prediction)
         .order_by(Prediction.created_at.desc())
         .all()
+    )
+
+
+@router.put(
+    "/predictions/{prediction_id}",
+    response_model=PredictionResponse,
+)
+def update_prediction(
+    prediction_id: int,
+    request: PredictionUpdate,
+    db: Session = Depends(get_db),
+):
+    prediction = (
+        db.query(Prediction)
+        .filter(Prediction.id == prediction_id)
+        .first()
+    )
+
+    if prediction is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Prediction not found",
+        )
+
+    price = predict_price(request.model_dump())
+
+    prediction.lead_time = request.lead_time
+    prediction.arrival_date_month = request.arrival_date_month
+    prediction.stays_in_weekend_nights = request.stays_in_weekend_nights
+    prediction.stays_in_week_nights = request.stays_in_week_nights
+    prediction.adults = request.adults
+    prediction.children = request.children
+    prediction.babies = request.babies
+    prediction.meal = request.meal
+    prediction.country = request.country
+    prediction.market_segment = request.market_segment
+    prediction.distribution_channel = request.distribution_channel
+    prediction.reserved_room_type = request.reserved_room_type
+    prediction.booking_changes = request.booking_changes
+    prediction.deposit_type = request.deposit_type
+    prediction.customer_type = request.customer_type
+    prediction.total_of_special_requests = request.total_of_special_requests
+    prediction.predicted_price = price
+
+    db.commit()
+    db.refresh(prediction)
+
+    return PredictionResponse(
+        predicted_price=round(price, 2)
     )
 
 
