@@ -1,9 +1,15 @@
-from fastapi import FastAPI, Depends
+from typing import List
+
+from fastapi import Depends, FastAPI
 from sqlalchemy.orm import Session
 
 from .database import Base, engine, get_db
 from .models import Prediction
-from .schemas import PredictionRequest, PredictionResponse
+from .schemas import (
+    PredictionRequest,
+    PredictionResponse,
+    PredictionHistoryResponse,
+)
 from .services import predict_price
 
 
@@ -11,7 +17,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Hotel Dynamic Pricing API",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 
@@ -24,11 +30,11 @@ def root():
 
 @app.post(
     "/predict",
-    response_model=PredictionResponse
+    response_model=PredictionResponse,
 )
 def predict(
     request: PredictionRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     price = predict_price(request.model_dump())
 
@@ -59,3 +65,19 @@ def predict(
     return PredictionResponse(
         predicted_price=round(price, 2)
     )
+
+
+@app.get(
+    "/predictions",
+    response_model=List[PredictionHistoryResponse],
+)
+def get_predictions(
+    db: Session = Depends(get_db),
+):
+    predictions = (
+        db.query(Prediction)
+        .order_by(Prediction.created_at.desc())
+        .all()
+    )
+
+    return predictions

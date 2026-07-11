@@ -22,3 +22,19 @@ class PredictionRequest(BaseModel):
 
 class PredictionResponse(BaseModel):
     predicted_price: float
+
+from datetime import datetime
+
+
+class PredictionHistoryResponse(BaseModel):
+    id: int
+    lead_time: int
+    arrival_date_month: str
+    country: str
+    market_segment: str
+    predicted_price: float
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True
+    }
