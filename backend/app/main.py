@@ -1,12 +1,10 @@
 from fastapi import FastAPI
 
-from .database import Base, engine
 from .api.prediction_routes import router
 from .utils.exception_handlers import (
     global_exception_handler,
 )
 
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Hotel Dynamic Pricing API",
