@@ -1,10 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
 
-from .database import Base
-from .database import engine
+from .database import Base, engine, get_db
+from .models import Prediction
+from .schemas import PredictionRequest, PredictionResponse
+from .services import predict_price
 
-# Import models BEFORE create_all()
-from . import models
 
 Base.metadata.create_all(bind=engine)
 
@@ -19,3 +20,42 @@ def root():
     return {
         "message": "Hotel Dynamic Pricing API running"
     }
+
+
+@app.post(
+    "/predict",
+    response_model=PredictionResponse
+)
+def predict(
+    request: PredictionRequest,
+    db: Session = Depends(get_db)
+):
+    price = predict_price(request.model_dump())
+
+    prediction = Prediction(
+        lead_time=request.lead_time,
+        arrival_date_month=request.arrival_date_month,
+        stays_in_weekend_nights=request.stays_in_weekend_nights,
+        stays_in_week_nights=request.stays_in_week_nights,
+        adults=request.adults,
+        children=request.children,
+        babies=request.babies,
+        meal=request.meal,
+        country=request.country,
+        market_segment=request.market_segment,
+        distribution_channel=request.distribution_channel,
+        reserved_room_type=request.reserved_room_type,
+        booking_changes=request.booking_changes,
+        deposit_type=request.deposit_type,
+        customer_type=request.customer_type,
+        total_of_special_requests=request.total_of_special_requests,
+        predicted_price=price,
+    )
+
+    db.add(prediction)
+    db.commit()
+    db.refresh(prediction)
+
+    return PredictionResponse(
+        predicted_price=round(price, 2)
+    )
