@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
 from .database import Base, engine, get_db
@@ -81,3 +81,28 @@ def get_predictions(
     )
 
     return predictions
+
+
+@app.delete("/predictions/{prediction_id}")
+def delete_prediction(
+    prediction_id: int,
+    db: Session = Depends(get_db),
+):
+    prediction = (
+        db.query(Prediction)
+        .filter(Prediction.id == prediction_id)
+        .first()
+    )
+
+    if prediction is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Prediction not found",
+        )
+
+    db.delete(prediction)
+    db.commit()
+
+    return {
+        "message": "Prediction deleted successfully"
+    }
