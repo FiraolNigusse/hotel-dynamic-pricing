@@ -1,6 +1,7 @@
 from typing import List
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from .database import Base, engine, get_db
@@ -17,20 +18,42 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Hotel Dynamic Pricing API",
+    description="Machine Learning API for predicting hotel room prices using a trained Random Forest model.",
     version="1.0.0",
 )
 
 
-@app.get("/")
+@app.exception_handler(Exception)
+async def global_exception_handler(
+    request: Request,
+    exc: Exception,
+):
+    return JSONResponse(
+        status_code=500,
+        content={
+            "success": False,
+            "error": str(exc),
+        },
+    )
+
+
+@app.get(
+    "/",
+    tags=["Health"]
+)
 def root():
     return {
-        "message": "Hotel Dynamic Pricing API running"
+        "success": True,
+        "application": "Hotel Dynamic Pricing API",
+        "version": "1.0.0",
+        "status": "running",
     }
 
 
 @app.post(
     "/predict",
     response_model=PredictionResponse,
+    tags=["Predictions"],
 )
 def predict(
     request: PredictionRequest,
@@ -70,6 +93,7 @@ def predict(
 @app.get(
     "/predictions",
     response_model=List[PredictionHistoryResponse],
+    tags=["Predictions"],
 )
 def get_predictions(
     db: Session = Depends(get_db),
@@ -83,7 +107,10 @@ def get_predictions(
     return predictions
 
 
-@app.delete("/predictions/{prediction_id}")
+@app.delete(
+    "/predictions/{prediction_id}",
+    tags=["Predictions"],
+)
 def delete_prediction(
     prediction_id: int,
     db: Session = Depends(get_db),
@@ -104,5 +131,6 @@ def delete_prediction(
     db.commit()
 
     return {
-        "message": "Prediction deleted successfully"
+        "success": True,
+        "message": "Prediction deleted successfully",
     }
