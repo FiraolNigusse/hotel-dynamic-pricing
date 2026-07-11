@@ -6,9 +6,11 @@ from .utils.exception_handlers import (
 )
 
 
+from .config import settings
+
 app = FastAPI(
-    title="Hotel Dynamic Pricing API",
-    version="1.0.0",
+    title=settings.API_TITLE,
+    version=settings.API_VERSION,
 )
 
 app.include_router(router)
