@@ -14,7 +14,6 @@ from ..schemas import PredictionUpdate
 from ..services import predict_price
 
 router = APIRouter(
-    prefix="/api/v1",
     tags=["Predictions"],
 )
 
