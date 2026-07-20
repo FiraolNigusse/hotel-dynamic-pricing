@@ -12,7 +12,7 @@ from ..schemas import (
 )
 from ..schemas import PredictionUpdate
 from ..schemas import DemandScoreRequest, DemandScoreResponse
-from ..services import predict_price, classify_demand, calculate_recommended_price
+from ..services import predict_price, classify_demand, calculate_recommended_price, generate_pricing_reason
 from ..demand_scoring import compute_demand_score
 
 router = APIRouter(
@@ -48,6 +48,7 @@ def predict(
     price = predict_price(data)
     tier = classify_demand(data)
     recommended = calculate_recommended_price(price, tier)
+    reason = generate_pricing_reason(data, tier, price, recommended)
 
     prediction = Prediction(
         lead_time=request.lead_time,
@@ -77,6 +78,7 @@ def predict(
         predicted_price=round(price, 2),
         recommended_price=recommended,
         pricing_tier=tier,
+        pricing_reason=reason,
     )
 
 
@@ -119,6 +121,7 @@ def update_prediction(
     price = predict_price(data)
     tier = classify_demand(data)
     recommended = calculate_recommended_price(price, tier)
+    reason = generate_pricing_reason(data, tier, price, recommended)
 
     prediction.lead_time = request.lead_time
     prediction.arrival_date_month = request.arrival_date_month
@@ -145,6 +148,7 @@ def update_prediction(
         predicted_price=round(price, 2),
         recommended_price=recommended,
         pricing_tier=tier,
+        pricing_reason=reason,
     )
 
 

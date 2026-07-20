@@ -203,3 +203,68 @@ def calculate_recommended_price(
 ) -> float:
     adjustment = DEMAND_TIER_ADJUSTMENTS[pricing_tier]
     return round(predicted_price * (1 + adjustment), 2)
+
+
+def generate_pricing_reason(
+    data: dict,
+    pricing_tier: str,
+    predicted_price: float,
+    recommended_price: float,
+) -> str:
+    adjustments = {
+        "Very High": ("increased", "25%", "strong"),
+        "High": ("increased", "15%", "elevated"),
+        "Medium": ("adjusted", "0%", "steady"),
+        "Low": ("reduced", "10%", "low"),
+        "Very Low": ("reduced", "20%", "very low"),
+    }
+
+    direction, percent, demand_word = adjustments[pricing_tier]
+
+    month = data.get("arrival_date_month", "")
+    adults = data.get("adults", 1)
+    children = data.get("children", 0)
+    lead_time = data.get("lead_time", 0)
+    special = data.get("total_of_special_requests", 0)
+    total_guests = adults + children
+
+    reasons = []
+
+    if month in PEAK_MONTHS:
+        reasons.append(f"demand is {demand_word} during {month}")
+    elif month in SHOULDER_MONTHS:
+        reasons.append(f"{month} is a shoulder season month")
+    else:
+        reasons.append(f"{month} is an off-peak month")
+
+    if total_guests > 2:
+        reasons.append(f"there {'are' if total_guests > 1 else 'is'} {total_guests} guests")
+    elif adults == 2:
+        reasons.append("2 adults are booking")
+
+    if lead_time <= 7:
+        reasons.append("the booking is last-minute")
+    elif lead_time <= 14:
+        reasons.append("the lead time is short")
+    elif lead_time >= 90:
+        reasons.append("the booking was made well in advance")
+
+    if special >= 3:
+        reasons.append(f"{special} special requests were made")
+    elif special == 1:
+        reasons.append("a special request was included")
+
+    if len(reasons) == 0:
+        reasons.append("standard booking conditions apply")
+
+    opening = f"Price has been {direction} by {percent}"
+    if pricing_tier == "Medium":
+        opening = f"Price remains unchanged at {percent} adjustment"
+
+    clause = reasons[0]
+    if len(reasons) > 1:
+        clause += ", and " + reasons[1]
+    if len(reasons) > 2:
+        clause += ", " + reasons[2]
+
+    return f"{opening} because {clause}."
