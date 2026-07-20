@@ -19,8 +19,11 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    Base.metadata.create_all(bind=engine)
-    logger.info("Database tables ensured")
+    try:
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database tables ensured")
+    except Exception as e:
+        logger.warning("Table creation skipped: %s", e)
     yield
 
 
