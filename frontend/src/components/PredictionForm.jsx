@@ -159,7 +159,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
         await onSubmit(payload);
       } else {
         const data = await createPrediction(payload);
-        onPrediction(data.predicted_price);
+        onPrediction(data);
       }
     } catch (err) {
       const detail = err.response?.data?.detail;

@@ -11,7 +11,7 @@ from ..schemas import (
     PredictionHistoryResponse,
 )
 from ..schemas import PredictionUpdate
-from ..services import predict_price
+from ..services import predict_price, classify_demand, calculate_recommended_price
 
 router = APIRouter(
     tags=["Predictions"],
@@ -33,7 +33,10 @@ def predict(
     request: PredictionRequest,
     db: Session = Depends(get_db),
 ):
-    price = predict_price(request.model_dump())
+    data = request.model_dump()
+    price = predict_price(data)
+    tier = classify_demand(data)
+    recommended = calculate_recommended_price(price, tier)
 
     prediction = Prediction(
         lead_time=request.lead_time,
@@ -60,7 +63,9 @@ def predict(
     db.refresh(prediction)
 
     return PredictionResponse(
-        predicted_price=round(price, 2)
+        predicted_price=round(price, 2),
+        recommended_price=recommended,
+        pricing_tier=tier,
     )
 
 
@@ -99,7 +104,10 @@ def update_prediction(
             detail="Prediction not found",
         )
 
-    price = predict_price(request.model_dump())
+    data = request.model_dump()
+    price = predict_price(data)
+    tier = classify_demand(data)
+    recommended = calculate_recommended_price(price, tier)
 
     prediction.lead_time = request.lead_time
     prediction.arrival_date_month = request.arrival_date_month
@@ -123,7 +131,9 @@ def update_prediction(
     db.refresh(prediction)
 
     return PredictionResponse(
-        predicted_price=round(price, 2)
+        predicted_price=round(price, 2),
+        recommended_price=recommended,
+        pricing_tier=tier,
     )
 
 

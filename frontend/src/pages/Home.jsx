@@ -8,6 +8,7 @@ import Skeleton from "../components/Skeleton";
 
 function Home() {
   const [predictedPrice, setPredictedPrice] = useState(null);
+  const [latestPrediction, setLatestPrediction] = useState(null);
   const [history, setHistory] = useState(null);
 
   useEffect(() => {
@@ -29,8 +30,9 @@ function Home() {
     };
   }, []);
 
-  function handlePrediction(price) {
-    setPredictedPrice(price);
+  function handlePrediction(data) {
+    setPredictedPrice(data.predicted_price);
+    setLatestPrediction(data);
 
     async function refresh() {
       try {
@@ -146,7 +148,7 @@ function Home() {
 
           {/* Sidebar */}
           <section className="space-y-6 xl:col-span-2">
-            <PriceCard price={predictedPrice} />
+            <PriceCard prediction={latestPrediction} />
 
             <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
               <div className="mb-4 flex items-center justify-between">

@@ -22,6 +22,8 @@ class PredictionRequest(BaseModel):
 
 class PredictionResponse(BaseModel):
     predicted_price: float
+    recommended_price: float
+    pricing_tier: str
 
 
 class PredictionUpdate(BaseModel):

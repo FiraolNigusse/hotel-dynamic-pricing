@@ -30,6 +30,15 @@ MONTH_MAP = {
 }
 
 PEAK_MONTHS = ["June", "July", "August", "December"]
+SHOULDER_MONTHS = ["May", "September", "October"]
+
+DEMAND_TIER_ADJUSTMENTS = {
+    "Very High": 0.25,
+    "High": 0.15,
+    "Medium": 0.0,
+    "Low": -0.10,
+    "Very Low": -0.20,
+}
 
 FEATURE_ENGINEERING_CATEGORICALS = [
     "meal",
@@ -103,3 +112,94 @@ def predict_price(data: dict) -> float:
     prediction = model.predict(aligned)
 
     return float(prediction[0])
+
+
+def classify_demand(data: dict) -> str:
+    score = 0
+
+    lead_time = data.get("lead_time", 0)
+    if lead_time <= 3:
+        score += 30
+    elif lead_time <= 14:
+        score += 25
+    elif lead_time <= 30:
+        score += 20
+    elif lead_time <= 60:
+        score += 15
+    elif lead_time <= 90:
+        score += 10
+    else:
+        score += 5
+
+    month = data.get("arrival_date_month", "")
+    if month in PEAK_MONTHS:
+        score += 15
+    elif month in SHOULDER_MONTHS:
+        score += 10
+    else:
+        score += 5
+
+    segment_scores = {
+        "Direct": 10,
+        "Online TA": 9,
+        "Corporate": 7,
+        "Offline TA/TO": 6,
+        "Groups": 4,
+        "Aviation": 3,
+        "Complementary": 2,
+        "Undefined": 1,
+    }
+    score += segment_scores.get(data.get("market_segment", ""), 3)
+
+    customer_scores = {
+        "Transient": 10,
+        "Transient-Party": 8,
+        "Contract": 6,
+        "Group": 4,
+    }
+    score += customer_scores.get(data.get("customer_type", ""), 5)
+
+    special = data.get("total_of_special_requests", 0)
+    if special >= 3:
+        score += 10
+    elif special == 2:
+        score += 7
+    elif special == 1:
+        score += 5
+    else:
+        score += 2
+
+    deposit = data.get("deposit_type", "")
+    if deposit == "Non Refund":
+        score += 10
+    elif deposit == "Refundable":
+        score += 6
+    else:
+        score += 3
+
+    adults = data.get("adults", 1)
+    if adults == 2:
+        score += 5
+    elif adults == 1:
+        score += 2
+    else:
+        score += 4
+
+    if score >= 75:
+        return "Very High"
+    elif score >= 60:
+        return "High"
+    elif score >= 40:
+        return "Medium"
+    elif score >= 20:
+        return "Low"
+    else:
+        return "Very Low"
+
+
+def calculate_recommended_price(
+    predicted_price: float,
+    pricing_tier: str,
+) -> float:
+    adjustment = DEMAND_TIER_ADJUSTMENTS[pricing_tier]
+    return round(predicted_price * (1 + adjustment), 2)
