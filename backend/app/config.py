@@ -12,7 +12,6 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173"
     LOG_LEVEL: str = "info"
-    HOST: str = "0.0.0.0"
     PORT: int = 8000
 
     model_config = SettingsConfigDict(

@@ -1,4 +1,4 @@
-from typing import List
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -6,49 +6,47 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models import Prediction
 from ..schemas import (
+    DemandScoreRequest,
+    DemandScoreResponse,
+    PredictionHistoryResponse,
     PredictionRequest,
     PredictionResponse,
-    PredictionHistoryResponse,
+    PredictionUpdate,
 )
-from ..schemas import PredictionUpdate
-from ..schemas import DemandScoreRequest, DemandScoreResponse
-from ..services import predict_price, classify_demand, calculate_recommended_price, generate_pricing_reason
+from ..services import (
+    classify_demand,
+    calculate_recommended_price,
+    generate_pricing_reason,
+    predict_price,
+)
 from ..demand_scoring import compute_demand_score
 
-router = APIRouter(
-    tags=["Predictions"],
-)
+router = APIRouter(tags=["Predictions"])
+
+DbSession = Annotated[Session, Depends(get_db)]
 
 
 @router.get("/")
-def root():
-    return {
-        "message": "Hotel Dynamic Pricing API running"
-    }
+def root() -> dict[str, str]:
+    return {"message": "Hotel Dynamic Pricing API running"}
 
 
-@router.post(
-    "/demand-score",
-    response_model=DemandScoreResponse,
-)
-def demand_score(request: DemandScoreRequest):
+@router.post("/demand-score", response_model=DemandScoreResponse)
+def demand_score(request: DemandScoreRequest) -> DemandScoreResponse:
     result = compute_demand_score(request.model_dump())
     return DemandScoreResponse(**result)
 
 
-@router.post(
-    "/predict",
-    response_model=PredictionResponse,
-)
+@router.post("/predict", response_model=PredictionResponse)
 def predict(
     request: PredictionRequest,
-    db: Session = Depends(get_db),
-):
+    db: DbSession,
+) -> PredictionResponse:
     data = request.model_dump()
     price = predict_price(data)
     tier = classify_demand(data)
     recommended = calculate_recommended_price(price, tier)
-    reason = generate_pricing_reason(data, tier, price, recommended)
+    reason = generate_pricing_reason(data, tier)
 
     prediction = Prediction(
         lead_time=request.lead_time,
@@ -82,13 +80,8 @@ def predict(
     )
 
 
-@router.get(
-    "/predictions",
-    response_model=List[PredictionHistoryResponse],
-)
-def get_predictions(
-    db: Session = Depends(get_db),
-):
+@router.get("/predictions", response_model=list[PredictionHistoryResponse])
+def get_predictions(db: DbSession) -> list[PredictionHistoryResponse]:
     return (
         db.query(Prediction)
         .order_by(Prediction.created_at.desc())
@@ -96,15 +89,12 @@ def get_predictions(
     )
 
 
-@router.put(
-    "/predictions/{prediction_id}",
-    response_model=PredictionResponse,
-)
+@router.put("/predictions/{prediction_id}", response_model=PredictionResponse)
 def update_prediction(
     prediction_id: int,
     request: PredictionUpdate,
-    db: Session = Depends(get_db),
-):
+    db: DbSession,
+) -> PredictionResponse:
     prediction = (
         db.query(Prediction)
         .filter(Prediction.id == prediction_id)
@@ -112,16 +102,13 @@ def update_prediction(
     )
 
     if prediction is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Prediction not found",
-        )
+        raise HTTPException(status_code=404, detail="Prediction not found")
 
     data = request.model_dump()
     price = predict_price(data)
     tier = classify_demand(data)
     recommended = calculate_recommended_price(price, tier)
-    reason = generate_pricing_reason(data, tier, price, recommended)
+    reason = generate_pricing_reason(data, tier)
 
     prediction.lead_time = request.lead_time
     prediction.arrival_date_month = request.arrival_date_month
@@ -155,8 +142,8 @@ def update_prediction(
 @router.delete("/predictions/{prediction_id}")
 def delete_prediction(
     prediction_id: int,
-    db: Session = Depends(get_db),
-):
+    db: DbSession,
+) -> dict[str, str]:
     prediction = (
         db.query(Prediction)
         .filter(Prediction.id == prediction_id)
@@ -164,14 +151,9 @@ def delete_prediction(
     )
 
     if prediction is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Prediction not found",
-        )
+        raise HTTPException(status_code=404, detail="Prediction not found")
 
     db.delete(prediction)
     db.commit()
 
-    return {
-        "message": "Prediction deleted successfully"
-    }
+    return {"message": "Prediction deleted successfully"}

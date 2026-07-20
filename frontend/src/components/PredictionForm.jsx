@@ -82,6 +82,36 @@ function buildFormValues(initialValues) {
   };
 }
 
+function SectionHeader({ icon, label }) {
+  return (
+    <div className="col-span-full flex items-center gap-2 border-b border-gray-100 pb-2 pt-2">
+      <span className="text-gray-400">{icon}</span>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+        {label}
+      </h3>
+    </div>
+  );
+}
+
+const STAY_ICON = (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+  </svg>
+);
+
+const GUEST_ICON = (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+  </svg>
+);
+
+const BOOKING_ICON = (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+  </svg>
+);
+
 function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) {
   const [form, setForm] = useState(() => buildFormValues(initialValues));
   const [errors, setErrors] = useState({});
@@ -192,17 +222,6 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
     return `${base} ${ring}`;
   }
 
-  function SectionHeader({ icon, label }) {
-    return (
-      <div className="col-span-full flex items-center gap-2 border-b border-gray-100 pb-2 pt-2">
-        <span className="text-gray-400">{icon}</span>
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-          {label}
-        </h3>
-      </div>
-    );
-  }
-
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {serverError && (
@@ -216,10 +235,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
 
       <fieldset disabled={loading}>
         <div className="grid gap-x-4 gap-y-3 sm:grid-cols-2">
-          <SectionHeader
-            icon={<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>}
-            label="Stay Details"
-          />
+          <SectionHeader icon={STAY_ICON} label="Stay Details" />
 
           {/* Lead Time */}
           <div>
@@ -290,10 +306,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
             {fieldError("stays_in_week_nights")}
           </div>
 
-          <SectionHeader
-            icon={<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>}
-            label="Guests"
-          />
+          <SectionHeader icon={GUEST_ICON} label="Guests" />
 
           {/* Adults */}
           <div>
@@ -347,10 +360,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
             {fieldError("babies")}
           </div>
 
-          <SectionHeader
-            icon={<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" /><path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" /></svg>}
-            label="Booking Options"
-          />
+          <SectionHeader icon={BOOKING_ICON} label="Booking Options" />
 
           {/* Meal */}
           <div>

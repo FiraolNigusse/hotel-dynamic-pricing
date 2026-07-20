@@ -14,7 +14,7 @@ MODEL_PATH = (
 
 model = joblib.load(MODEL_PATH)
 
-MONTH_MAP = {
+MONTH_MAP: dict[str, int] = {
     "January": 1,
     "February": 2,
     "March": 3,
@@ -29,10 +29,10 @@ MONTH_MAP = {
     "December": 12,
 }
 
-PEAK_MONTHS = ["June", "July", "August", "December"]
-SHOULDER_MONTHS = ["May", "September", "October"]
+PEAK_MONTHS: list[str] = ["June", "July", "August", "December"]
+SHOULDER_MONTHS: list[str] = ["May", "September", "October"]
 
-DEMAND_TIER_ADJUSTMENTS = {
+DEMAND_TIER_ADJUSTMENTS: dict[str, float] = {
     "Very High": 0.25,
     "High": 0.15,
     "Medium": 0.0,
@@ -40,7 +40,7 @@ DEMAND_TIER_ADJUSTMENTS = {
     "Very Low": -0.20,
 }
 
-FEATURE_ENGINEERING_CATEGORICALS = [
+FEATURE_ENGINEERING_CATEGORICALS: list[str] = [
     "meal",
     "market_segment",
     "distribution_channel",
@@ -49,12 +49,12 @@ FEATURE_ENGINEERING_CATEGORICALS = [
     "customer_type",
 ]
 
-TRAINING_CATEGORICALS = [
+TRAINING_CATEGORICALS: list[str] = [
     "arrival_date_month",
     "country",
 ]
 
-DEFAULT_FEATURES = {
+DEFAULT_FEATURES: dict[str, int] = {
     "is_canceled": 0,
     "arrival_date_year": 2017,
     "arrival_date_week_number": 27,
@@ -139,7 +139,7 @@ def classify_demand(data: dict) -> str:
     else:
         score += 5
 
-    segment_scores = {
+    segment_scores: dict[str, int] = {
         "Direct": 10,
         "Online TA": 9,
         "Corporate": 7,
@@ -151,7 +151,7 @@ def classify_demand(data: dict) -> str:
     }
     score += segment_scores.get(data.get("market_segment", ""), 3)
 
-    customer_scores = {
+    customer_scores: dict[str, int] = {
         "Transient": 10,
         "Transient-Party": 8,
         "Contract": 6,
@@ -208,10 +208,8 @@ def calculate_recommended_price(
 def generate_pricing_reason(
     data: dict,
     pricing_tier: str,
-    predicted_price: float,
-    recommended_price: float,
 ) -> str:
-    adjustments = {
+    adjustments: dict[str, tuple[str, str, str]] = {
         "Very High": ("increased", "25%", "strong"),
         "High": ("increased", "15%", "elevated"),
         "Medium": ("adjusted", "0%", "steady"),
@@ -228,7 +226,7 @@ def generate_pricing_reason(
     special = data.get("total_of_special_requests", 0)
     total_guests = adults + children
 
-    reasons = []
+    reasons: list[str] = []
 
     if month in PEAK_MONTHS:
         reasons.append(f"demand is {demand_word} during {month}")
@@ -238,7 +236,7 @@ def generate_pricing_reason(
         reasons.append(f"{month} is an off-peak month")
 
     if total_guests > 2:
-        reasons.append(f"there {'are' if total_guests > 1 else 'is'} {total_guests} guests")
+        reasons.append(f"there are {total_guests} guests")
     elif adults == 2:
         reasons.append("2 adults are booking")
 
@@ -253,9 +251,6 @@ def generate_pricing_reason(
         reasons.append(f"{special} special requests were made")
     elif special == 1:
         reasons.append("a special request was included")
-
-    if len(reasons) == 0:
-        reasons.append("standard booking conditions apply")
 
     opening = f"Price has been {direction} by {percent}"
     if pricing_tier == "Medium":
