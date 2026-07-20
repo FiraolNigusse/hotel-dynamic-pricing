@@ -3,11 +3,13 @@ services:
     name: hotel-dynamic-pricing-api
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: cd backend && gunicorn app.main:app -c ../gunicorn_conf.py
+    startCommand: cd backend && alembic upgrade head && gunicorn app.main:app -c ../gunicorn_conf.py
     envVars:
       - key: ENVIRONMENT
         value: production
       - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGINS
         sync: false
       - key: PORT
         value: 8000
