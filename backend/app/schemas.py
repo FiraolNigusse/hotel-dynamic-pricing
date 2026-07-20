@@ -51,6 +51,7 @@ class PredictionHistoryResponse(BaseModel):
     arrival_date_month: str
     country: str
     market_segment: str
+    reserved_room_type: str
     predicted_price: float
     created_at: datetime
 

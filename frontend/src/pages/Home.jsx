@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import PredictionForm from "../components/PredictionForm";
 import PriceCard from "../components/PriceCard";
 import { getPredictions } from "../api/predictions";
@@ -49,7 +50,12 @@ function Home() {
           <h1 className="text-xl font-bold text-gray-900">
             Hotel Dynamic Pricing
           </h1>
-          <span className="text-sm text-gray-500">Price Predictor</span>
+          <nav className="flex items-center gap-4">
+            <span className="text-sm font-medium text-gray-900">Predict</span>
+            <Link to="/history" className="text-sm text-gray-500 hover:text-gray-900">
+              History
+            </Link>
+          </nav>
         </div>
       </header>
 
