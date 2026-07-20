@@ -12,7 +12,14 @@ MODEL_PATH = (
     / "best_price_model.pkl"
 )
 
-model = joblib.load(MODEL_PATH)
+_model = None
+
+
+def _get_model():
+    global _model
+    if _model is None:
+        _model = joblib.load(MODEL_PATH)
+    return _model
 
 MONTH_MAP: dict[str, int] = {
     "January": 1,
@@ -103,13 +110,14 @@ def _build_feature_row(data: dict) -> pd.DataFrame:
 
 
 def predict_price(data: dict) -> float:
+    m = _get_model()
     sample = _build_feature_row(data)
-    expected_columns = list(model.feature_names_in_)
+    expected_columns = list(m.feature_names_in_)
 
     aligned = pd.DataFrame(0, index=sample.index, columns=expected_columns)
     aligned.update(sample)
 
-    prediction = model.predict(aligned)
+    prediction = m.predict(aligned)
 
     return float(prediction[0])
 
