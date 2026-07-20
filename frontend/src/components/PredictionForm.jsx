@@ -179,32 +179,51 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
   function fieldError(name) {
     if (!errors[name]) return null;
     return (
-      <p className="mt-1 text-xs text-red-600">{errors[name]}</p>
+      <p className="mt-1.5 text-xs font-medium text-red-500">{errors[name]}</p>
     );
   }
 
   function inputClasses(name) {
     const base =
-      "w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors";
+      "w-full rounded-xl border bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900 outline-none transition-all placeholder:text-gray-400";
     const ring = errors[name]
-      ? "border-red-400 focus:border-red-500 focus:ring-1 focus:ring-red-500"
-      : "border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500";
+      ? "border-red-300 bg-red-50 focus:border-red-500 focus:bg-white focus:ring-2 focus:ring-red-500/20"
+      : "border-gray-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20";
     return `${base} ${ring}`;
   }
 
+  function SectionHeader({ icon, label }) {
+    return (
+      <div className="col-span-full flex items-center gap-2 border-b border-gray-100 pb-2 pt-2">
+        <span className="text-gray-400">{icon}</span>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+          {label}
+        </h3>
+      </div>
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {serverError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          {serverError}
+        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <svg className="mt-0.5 h-5 w-5 shrink-0 text-red-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+          <p>{serverError}</p>
         </div>
       )}
 
       <fieldset disabled={loading}>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-x-4 gap-y-3 sm:grid-cols-2">
+          <SectionHeader
+            icon={<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>}
+            label="Stay Details"
+          />
+
           {/* Lead Time */}
           <div>
-            <label htmlFor="lead_time" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="lead_time" className="mb-1.5 block text-sm font-medium text-gray-700">
               Lead Time (days)
             </label>
             <input
@@ -221,7 +240,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
 
           {/* Arrival Month */}
           <div>
-            <label htmlFor="arrival_date_month" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="arrival_date_month" className="mb-1.5 block text-sm font-medium text-gray-700">
               Arrival Month
             </label>
             <select
@@ -239,7 +258,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
 
           {/* Weekend Nights */}
           <div>
-            <label htmlFor="stays_in_weekend_nights" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="stays_in_weekend_nights" className="mb-1.5 block text-sm font-medium text-gray-700">
               Weekend Nights
             </label>
             <input
@@ -256,7 +275,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
 
           {/* Week Nights */}
           <div>
-            <label htmlFor="stays_in_week_nights" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="stays_in_week_nights" className="mb-1.5 block text-sm font-medium text-gray-700">
               Week Nights
             </label>
             <input
@@ -271,9 +290,14 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
             {fieldError("stays_in_week_nights")}
           </div>
 
+          <SectionHeader
+            icon={<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>}
+            label="Guests"
+          />
+
           {/* Adults */}
           <div>
-            <label htmlFor="adults" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="adults" className="mb-1.5 block text-sm font-medium text-gray-700">
               Adults
             </label>
             <input
@@ -290,7 +314,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
 
           {/* Children */}
           <div>
-            <label htmlFor="children" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="children" className="mb-1.5 block text-sm font-medium text-gray-700">
               Children
             </label>
             <input
@@ -308,7 +332,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
 
           {/* Babies */}
           <div>
-            <label htmlFor="babies" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="babies" className="mb-1.5 block text-sm font-medium text-gray-700">
               Babies
             </label>
             <input
@@ -323,9 +347,14 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
             {fieldError("babies")}
           </div>
 
+          <SectionHeader
+            icon={<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" /><path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" /></svg>}
+            label="Booking Options"
+          />
+
           {/* Meal */}
           <div>
-            <label htmlFor="meal" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="meal" className="mb-1.5 block text-sm font-medium text-gray-700">
               Meal
             </label>
             <select
@@ -343,7 +372,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
 
           {/* Country */}
           <div>
-            <label htmlFor="country" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="country" className="mb-1.5 block text-sm font-medium text-gray-700">
               Country
             </label>
             <select
@@ -361,7 +390,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
 
           {/* Market Segment */}
           <div>
-            <label htmlFor="market_segment" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="market_segment" className="mb-1.5 block text-sm font-medium text-gray-700">
               Market Segment
             </label>
             <select
@@ -379,7 +408,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
 
           {/* Distribution Channel */}
           <div>
-            <label htmlFor="distribution_channel" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="distribution_channel" className="mb-1.5 block text-sm font-medium text-gray-700">
               Distribution Channel
             </label>
             <select
@@ -397,7 +426,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
 
           {/* Reserved Room Type */}
           <div>
-            <label htmlFor="reserved_room_type" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="reserved_room_type" className="mb-1.5 block text-sm font-medium text-gray-700">
               Room Type
             </label>
             <select
@@ -415,7 +444,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
 
           {/* Booking Changes */}
           <div>
-            <label htmlFor="booking_changes" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="booking_changes" className="mb-1.5 block text-sm font-medium text-gray-700">
               Booking Changes
             </label>
             <input
@@ -432,7 +461,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
 
           {/* Deposit Type */}
           <div>
-            <label htmlFor="deposit_type" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="deposit_type" className="mb-1.5 block text-sm font-medium text-gray-700">
               Deposit Type
             </label>
             <select
@@ -450,7 +479,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
 
           {/* Customer Type */}
           <div>
-            <label htmlFor="customer_type" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="customer_type" className="mb-1.5 block text-sm font-medium text-gray-700">
               Customer Type
             </label>
             <select
@@ -468,7 +497,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
 
           {/* Special Requests */}
           <div>
-            <label htmlFor="total_of_special_requests" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="total_of_special_requests" className="mb-1.5 block text-sm font-medium text-gray-700">
               Special Requests
             </label>
             <input
@@ -488,7 +517,7 @@ function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) 
       <button
         type="submit"
         disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-blue-600/25 transition-all hover:bg-blue-700 hover:shadow-md hover:shadow-blue-600/30 active:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
       >
         {loading ? (
           <>
