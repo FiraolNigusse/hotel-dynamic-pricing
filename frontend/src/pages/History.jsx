@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getPredictions, updatePrediction } from "../api/predictions";
+import { getPredictions, updatePrediction, deletePrediction } from "../api/predictions";
 import { formatPrice } from "../utils/formatPrice";
 import LoadingSpinner from "../components/LoadingSpinner";
 import EditModal from "../components/EditModal";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -20,6 +21,9 @@ function History() {
   const [predictions, setPredictions] = useState(null);
   const [error, setError] = useState(null);
   const [editingPrediction, setEditingPrediction] = useState(null);
+  const [deletingPrediction, setDeletingPrediction] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,6 +54,23 @@ function History() {
       ),
     );
     setEditingPrediction(null);
+  }
+
+  async function handleDelete() {
+    setDeleteLoading(true);
+    try {
+      await deletePrediction(deletingPrediction.id);
+      setPredictions((prev) => prev.filter((p) => p.id !== deletingPrediction.id));
+      setDeletingPrediction(null);
+      setNotification(`Prediction #${deletingPrediction.id} deleted.`);
+      setTimeout(() => setNotification(null), 4000);
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      setDeletingPrediction(null);
+      setError(typeof detail === "string" ? detail : "Failed to delete prediction.");
+    } finally {
+      setDeleteLoading(false);
+    }
   }
 
   return (
@@ -128,13 +149,22 @@ function History() {
                         {formatDate(p.created_at)}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => setEditingPrediction(p)}
-                          className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
-                        >
-                          Edit
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setEditingPrediction(p)}
+                            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeletingPrediction(p)}
+                            className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -151,6 +181,23 @@ function History() {
           onClose={() => setEditingPrediction(null)}
           onSubmit={handleUpdate}
         />
+      )}
+
+      {deletingPrediction && (
+        <ConfirmDialog
+          title={`Delete Prediction #${deletingPrediction.id}?`}
+          message="This action cannot be undone. The prediction will be permanently removed."
+          confirmLabel="Delete"
+          loading={deleteLoading}
+          onConfirm={handleDelete}
+          onCancel={() => setDeletingPrediction(null)}
+        />
+      )}
+
+      {notification && (
+        <div className="fixed bottom-6 right-6 z-50 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 shadow-lg">
+          {notification}
+        </div>
       )}
     </div>
   );
