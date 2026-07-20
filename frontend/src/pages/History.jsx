@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getPredictions } from "../api/predictions";
+import { getPredictions, updatePrediction } from "../api/predictions";
 import { formatPrice } from "../utils/formatPrice";
 import LoadingSpinner from "../components/LoadingSpinner";
+import EditModal from "../components/EditModal";
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -18,6 +19,7 @@ function formatDate(iso) {
 function History() {
   const [predictions, setPredictions] = useState(null);
   const [error, setError] = useState(null);
+  const [editingPrediction, setEditingPrediction] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -37,6 +39,18 @@ function History() {
     load();
     return () => { cancelled = true; };
   }, []);
+
+  async function handleUpdate(payload) {
+    const data = await updatePrediction(editingPrediction.id, payload);
+    setPredictions((prev) =>
+      prev.map((p) =>
+        p.id === editingPrediction.id
+          ? { ...p, ...payload, predicted_price: data.predicted_price }
+          : p,
+      ),
+    );
+    setEditingPrediction(null);
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -92,6 +106,7 @@ function History() {
                     <th className="px-4 py-3">Market Segment</th>
                     <th className="px-4 py-3">Room Type</th>
                     <th className="px-4 py-3">Created At</th>
+                    <th className="px-4 py-3"><span className="sr-only">Actions</span></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -112,6 +127,15 @@ function History() {
                       <td className="px-4 py-3 text-gray-500">
                         {formatDate(p.created_at)}
                       </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => setEditingPrediction(p)}
+                          className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                        >
+                          Edit
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -120,6 +144,14 @@ function History() {
           )}
         </div>
       </main>
+
+      {editingPrediction && (
+        <EditModal
+          prediction={editingPrediction}
+          onClose={() => setEditingPrediction(null)}
+          onSubmit={handleUpdate}
+        />
+      )}
     </div>
   );
 }

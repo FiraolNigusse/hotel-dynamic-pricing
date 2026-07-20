@@ -60,8 +60,30 @@ const NUMERIC_FIELDS = [
   "total_of_special_requests",
 ];
 
-function PredictionForm({ onPrediction }) {
-  const [form, setForm] = useState(INITIAL_FORM);
+function buildFormValues(initialValues) {
+  if (!initialValues) return INITIAL_FORM;
+  return {
+    lead_time: String(initialValues.lead_time),
+    arrival_date_month: initialValues.arrival_date_month,
+    stays_in_weekend_nights: String(initialValues.stays_in_weekend_nights),
+    stays_in_week_nights: String(initialValues.stays_in_week_nights),
+    adults: String(initialValues.adults),
+    children: String(initialValues.children),
+    babies: String(initialValues.babies),
+    meal: initialValues.meal,
+    country: initialValues.country,
+    market_segment: initialValues.market_segment,
+    distribution_channel: initialValues.distribution_channel,
+    reserved_room_type: initialValues.reserved_room_type,
+    booking_changes: String(initialValues.booking_changes),
+    deposit_type: initialValues.deposit_type,
+    customer_type: initialValues.customer_type,
+    total_of_special_requests: String(initialValues.total_of_special_requests),
+  };
+}
+
+function PredictionForm({ onPrediction, onSubmit, submitLabel, initialValues }) {
+  const [form, setForm] = useState(() => buildFormValues(initialValues));
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -133,8 +155,12 @@ function PredictionForm({ onPrediction }) {
         total_of_special_requests: Number(form.total_of_special_requests),
       };
 
-      const data = await createPrediction(payload);
-      onPrediction(data.predicted_price);
+      if (onSubmit) {
+        await onSubmit(payload);
+      } else {
+        const data = await createPrediction(payload);
+        onPrediction(data.predicted_price);
+      }
     } catch (err) {
       const detail = err.response?.data?.detail;
       if (Array.isArray(detail)) {
@@ -467,10 +493,10 @@ function PredictionForm({ onPrediction }) {
         {loading ? (
           <>
             <LoadingSpinner size="sm" />
-            Predicting...
+            {onSubmit ? "Saving..." : "Predicting..."}
           </>
         ) : (
-          "Predict Price"
+          submitLabel || "Predict Price"
         )}
       </button>
     </form>
