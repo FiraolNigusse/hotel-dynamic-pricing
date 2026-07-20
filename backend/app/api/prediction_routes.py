@@ -11,7 +11,9 @@ from ..schemas import (
     PredictionHistoryResponse,
 )
 from ..schemas import PredictionUpdate
+from ..schemas import DemandScoreRequest, DemandScoreResponse
 from ..services import predict_price, classify_demand, calculate_recommended_price
+from ..demand_scoring import compute_demand_score
 
 router = APIRouter(
     tags=["Predictions"],
@@ -23,6 +25,15 @@ def root():
     return {
         "message": "Hotel Dynamic Pricing API running"
     }
+
+
+@router.post(
+    "/demand-score",
+    response_model=DemandScoreResponse,
+)
+def demand_score(request: DemandScoreRequest):
+    result = compute_demand_score(request.model_dump())
+    return DemandScoreResponse(**result)
 
 
 @router.post(

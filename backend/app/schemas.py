@@ -71,3 +71,27 @@ class PredictionHistoryResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+
+class DemandScoreRequest(BaseModel):
+    lead_time: int
+    arrival_date_month: str
+    adults: int
+    market_segment: str
+    booking_changes: int
+    total_of_special_requests: int
+
+
+class DemandScoreBreakdown(BaseModel):
+    lead_time: int
+    special_requests: int
+    adults: int
+    market_segment: int
+    month: int
+    booking_changes: int
+
+
+class DemandScoreResponse(BaseModel):
+    demand_score: int
+    demand_level: str
+    breakdown: DemandScoreBreakdown
